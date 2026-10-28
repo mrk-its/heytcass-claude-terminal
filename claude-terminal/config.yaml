@@ -2,12 +2,13 @@
 name: "Claude Terminal"
 description: "Web terminal with Anthropic's Claude Code CLI and persistent auth"
 version: "2.6.2"
-slug: "claude_terminal"
+slug: "claude_terminal_mrk"
+stdin: true
 init: false
 
 # Prebuilt images on GHCR — the Supervisor pulls these instead of building
 # locally (no build OOM, no image blobs in backups). Tag = version below.
-image: "ghcr.io/heytcass/{arch}-addon-claude-terminal"
+# image: "ghcr.io/heytcass/{arch}-addon-claude-terminal"
 
 # Supported architectures (armv7 dropped in 2.5.0: HAOS dropped 32-bit ARM,
 # and neither Claude Code native builds nor managed Python exist for it)

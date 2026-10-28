@@ -508,6 +508,34 @@ setup_ha_mcp() {
     fi
 }
 
+# Run named jobs sent from HA via hassio.addon_stdin (local addition).
+# Input "faktury" runs /config/claude-jobs/faktury.sh. Only executable
+# scripts in that folder can be started; the name is reduced to
+# [A-Za-z0-9_-], so quotes from HA, slashes and ".." are stripped.
+start_stdin_listener() {
+    local jobs_dir="/config/claude-jobs"
+    mkdir -p "$jobs_dir/logs"
+    bashio::log.info "Starting stdin job listener (jobs in ${jobs_dir})"
+
+    exec 3<&0    # background jobs get /dev/null as stdin, so keep the real one on fd 3
+    (
+        set +e
+        while IFS= read -r line <&3; do
+            name=$(printf '%s' "$line" | tr -cd 'A-Za-z0-9_-')
+            [ -z "$name" ] && continue
+            job="${jobs_dir}/${name}.sh"
+            if [ -x "$job" ]; then
+                bashio::log.info "stdin: starting job '${name}'"
+                flock -n "/tmp/claude-job-${name}.lock" "$job" \
+                    </dev/null >>"${jobs_dir}/logs/${name}.log" 2>&1 &
+            else
+                bashio::log.warning "stdin: no executable job '${job}', ignored"
+            fi
+        done
+    ) &
+    exec 3<&-
+}
+
 # Main execution
 main() {
     bashio::log.info "Starting Claude Terminal add-on..."
@@ -521,6 +549,7 @@ main() {
     generate_ha_context
     start_login_url_watcher
     setup_ha_mcp
+    start_stdin_listener
     start_web_terminal
 }
 
