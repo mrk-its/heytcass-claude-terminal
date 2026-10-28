@@ -1,5 +1,5 @@
 ---
-name: "Claude Terminal"
+name: "Claude Terminal (mrk)"
 description: "Web terminal with Anthropic's Claude Code CLI and persistent auth"
 version: "2.6.2"
 slug: "claude_terminal_mrk"
